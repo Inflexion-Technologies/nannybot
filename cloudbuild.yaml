@@ -1,0 +1,84 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build the image
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/nannybot:$COMMIT_SHA', '.']
+
+- name: gcr.io/cloud-builders/docker
+  id: Tag the image
+  args:
+    - 'tag'
+    - 'gcr.io/$PROJECT_ID/nannybot:$COMMIT_SHA'
+    - 'gcr.io/$PROJECT_ID/nannybot:$BRANCH_NAME'
+
+- name: 'gcr.io/cloud-builders/gsutil'
+  id: Pull the deploy key
+  args: ["cp", "gs://cloud-build-ic-cloud/keys/nannybot_deploy", "/root/.ssh/id_rsa"]
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+- name: 'alpine'
+  id: Set permissions on ssh file
+  args: ["chmod", "0600", "/root/.ssh/id_rsa"]
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+- name: 'gcr.io/cloud-builders/gsutil'
+  id: Pull the known hosts
+  args: ["cp", "gs://cloud-build-ic-cloud/known_hosts", "/root/.ssh/"]
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Clone deployment repo
+  entrypoint: /bin/sh
+  args:
+  - '-c'
+  - |
+    git clone git@github.com:Inflexion-Technologies/nannybot-deployment.git && \
+    cd nannybot-deployment && \
+    git checkout master && \
+    git config user.email $(gcloud auth list --filter=status:ACTIVE --format='value(account)')
+    git config user.name "Cloud Build"
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+- name: 'alpine'
+  id: Update image id
+  entrypoint: /bin/ash
+  args:
+  - '-c'
+  - |
+    apk update
+    apk add wget
+    wget -O yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
+    chmod +x yq
+    ./yq write --inplace nannybot-deployment/values.yaml images.tag ${COMMIT_SHA}
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Push manifest if building master
+  entrypoint: /bin/sh
+  args:
+  - '-c'
+  - |
+    set -x && \
+
+    if test $BRANCH_NAME = master; then
+      cd nannybot-deployment && \
+      git add values.yaml && \
+      git commit -m "Deploying image gcr.io/${PROJECT_ID}/nannybot:${SHORT_SHA}
+      Built from commit ${COMMIT_SHA} of repository nannybot
+      Author: $(git log --format='%an <%ae>' -n 1 HEAD)" || true && \
+      git push origin $BRANCH_NAME
+    fi
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+
+images:
+  - 'gcr.io/$PROJECT_ID/nannybot:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/nannybot:$BRANCH_NAME'
+# $PROJECT_ID, $REPO_NAME, $BRANCH_NAME, $TAG_NAME, $COMMIT_SHA, $SHORT_SHA
