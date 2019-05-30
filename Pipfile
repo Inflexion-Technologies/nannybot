@@ -1,0 +1,8 @@
+[scripts]
+build-image = "docker build -t nannybot ."
+
+[packages]
+errbot = "*"
+
+[pipenv]
+allow_prereleases = true

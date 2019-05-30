@@ -1,0 +1,10 @@
+[Core]
+name = ICII
+module = icii
+
+[Documentation]
+description = icii notifications
+
+[Python]
+version = 3
+
