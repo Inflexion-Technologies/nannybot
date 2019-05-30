@@ -56,7 +56,7 @@ steps:
     apk add wget
     wget -O yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
     chmod +x yq
-    ./yq write --inplace nannybot-deployment/values.yaml images.tag ${COMMIT_SHA}
+    ./yq write --inplace nannybot-deployment/values.yaml image.tag ${COMMIT_SHA}
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: Push manifest if building master
