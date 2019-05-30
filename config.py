@@ -1,3 +1,4 @@
+from os import getenv
 import logging
 
 ##########################################################################
@@ -26,7 +27,7 @@ import logging
 # 'Telegram' - cloud-based mobile and desktop messaging app with a focus
 #              on security and speed. (https://telegram.org/)
 
-BACKEND = "Text"  # defaults to XMPP
+BACKEND = "Slack"  # defaults to XMPP
 
 # STORAGE selection.
 # This configures the type of persistence you wish to use Errbot with.
@@ -107,7 +108,7 @@ BOT_LOG_LEVEL = logging.INFO
 # Enable logging to sentry (find out more about sentry at www.getsentry.com).
 # This is optional and disabled by default.
 BOT_LOG_SENTRY = False
-SENTRY_DSN = ""
+SENTRY_DSN = getenv("SENTRY_DSN", "")
 SENTRY_LOGLEVEL = BOT_LOG_LEVEL
 
 # Execute commands in asynchronous mode. In this mode, Errbot will spawn 10
@@ -123,48 +124,14 @@ SENTRY_LOGLEVEL = BOT_LOG_LEVEL
 ##########################################################################
 
 # The identity, or credentials, used to connect to a server
-BOT_IDENTITY = {
-    "username": "@errbot",
-    # XMPP (Jabber) mode
-    # "username": "err@localhost",  # The JID of the user you have created for the bot
-    # "password": "changeme",  # The corresponding password for this user
-    # 'server': ('host.domain.tld',5222), # server override
-    ## HipChat mode (Comment the above if using this mode)
-    # 'username' : '12345_123456@chat.hipchat.com',
-    # 'password' : 'changeme',
-    ## Group admins can create/view tokens on the settings page after logging
-    ## in on HipChat's website
-    # 'token'    : 'ed4b74d62833267d98aa99f312ff04',
-    ## If you're using HipChat server (self-hosted HipChat) then you should set
-    ## the endpoint below. If you don't use HipChat server but use the hosted version
-    ## of HipChat then you may leave this commented out.
-    # 'endpoint' : 'https://api.hipchat.com'
-    ## Slack mode (comment the others above if using this mode)
-    # 'token': 'xoxb-4426949411-aEM7...',
-    ## Telegram mode (comment the others above if using this mode)
-    # 'token': '103419016:AAbcd1234...',
-    ## IRC mode (Comment the others above if using this mode)
-    # 'nickname' : 'err-chatbot',
-    # 'username' : 'err-chatbot',    # optional, defaults to nickname if omitted
-    # 'password' : None,             # optional
-    # 'server' : 'irc.freenode.net',
-    # 'port': 6667,                  # optional
-    # 'ssl': False,                  # optional
-    # 'ipv6': False,                 # optional
-    # 'nickserv_password': None,     # optional
-    ## Optional: Specify an IP address or hostname (vhost), and a
-    ## port, to use when making the connection. Leave port at 0
-    ## if you have no source port preference.
-    ##    example: 'bind_address': ('my-errbot.io', 0)
-    # 'bind_address': ('localhost', 0),
-}
+BOT_IDENTITY = {"token": getenv("SLACK_TOKEN")}
 
 # Set the admins of your bot. Only these users will have access
 # to the admin-only commands.
 #
 # Unix-style glob patterns are supported, so 'gbin@localhost'
 # would be considered an admin if setting '*@localhost'.
-BOT_ADMINS = ("@*",)
+BOT_ADMINS = ("@ellis.adigvom",)
 
 # Set of admins that wish to receive administrative bot notifications.
 # BOT_ADMINS_NOTIFICATIONS = ()
@@ -173,7 +140,7 @@ BOT_ADMINS = ("@*",)
 # should include the # sign here. For XMPP rooms that are password
 # protected, you can specify another tuple here instead of a string,
 # using the format (RoomName, Password).
-# CHATROOM_PRESENCE = ('err@conference.server.tld',)
+# CHATROOM_PRESENCE = ("#icam_corp_portal",)
 
 # The FullName, or nickname, your bot should use. What you set here will
 # be the nickname that Errbot shows in chatrooms. Note that some XMPP
