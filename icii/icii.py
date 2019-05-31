@@ -14,6 +14,14 @@ class ICII(BotPlugin):
     def message(self, req):
         self.send(self.build_identifier("#icam_corp_portal"), req["message"])
 
+    @webhook
+    def instruction(self, req):
+        self.send_card(
+            title="Instruction submitted",
+            fields=req.items(),
+            color="red" if req["Type"] == "Withdrawal" else "green",
+        )
+
     # Passing split_args_with=None will cause arguments to be split on any kind
     # of whitespace, just like Python's split() does
     @botcmd(split_args_with=None)
