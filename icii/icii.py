@@ -12,12 +12,15 @@ class ICII(BotPlugin):
 
     @webhook
     def message(self, req):
-        self.send(self.build_identifier("#icam_corp_portal"), req["message"])
+        room = req.get("_room")
+        self.send(self.build_identifier(room) if room else None, req["message"])
 
     @webhook
     def instruction(self, req):
+        room = req.get("_room")
         self.send_card(
+            to=self.build_identifier(room) if room else None,
             title="Instruction submitted",
-            fields=req.items(),
+            fields=(i for i in req.items() if not i[0].startswith("_")),
             color="red" if req["Type"] == "Withdrawal" else "green",
         )
